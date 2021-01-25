@@ -1,0 +1,337 @@
+{% extends 'base.html'%}
+{% load static %}
+{% load widget_tweaks %}
+{% block "main_content" %}
+<div id="app">
+  
+  <div class="row">
+    <div class="col-9">
+      <div class="card card-outline card-primary" v-if="search">
+        <div class="card-header">
+          <h3 class="card-title">Recherche</h3>
+          <div class="card-tools">
+            <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-3">
+              <div class="form-group">
+                <label for="nomPrenomFilter">Nom / Prénom</label>
+                <input id="nomPrenomFilter" class="form-control" type="text" placeholder="" v-model="filter.nomPrenom" v-on:keyup.enter="go_search">
+              </div>
+            </div>
+            <div class="col-3">
+              <div class="form-group">
+                <label for="villeFilter">Ville</label>
+                <input id="villeFilter" class="form-control" type="text" placeholder="" v-model="filter.ville" v-on:keyup.enter="go_search">
+              </div>
+            </div>
+            <div class="col-3">
+              <div class="form-group">
+                <div class="custom-control custom-switch">
+                   
+                  <input type="checkbox" class="custom-control-input" id="actifFilter" v-model="filter.actif"  v-on:change="go_search">
+                  <label class="custom-control-label" for="actifFilter">Actif ?</label> 
+                </div>
+              </div>
+            </div>
+            <div class="col-3">
+              <label for="btnFilter">Go !</label>
+              <div class="row">
+                <div class="col-6">
+                  <button id="btnFilter" class="btn btn-primary btn-block" v-on:click="go_search"><i class="fas fa-filter"></i></button>
+                </div>
+                <div class="col-6">
+                  <button id="btnFilter" class="btn btn-danger btn-block" v-on:click="resetFilter"><i class="fas fa-times"></i></button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+      </div>
+<div class="card card-outline card-primary" v-if="search">
+        <div class="card-header">
+          <h3 class="card-title">Liste des articles</h3>
+          <div class="card-tools">
+            <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-1">
+              <button class="btn btn-block btn-outline-primary btn-sm" v-bind:class="{ 'disabled': !search.previous }" v-on:click="go_previous"><i class="fas fa-angle-double-left"></i></button>
+            </div>
+            <div class="col-10">
+            </div>
+            <div class="col-1">
+              <button class="btn btn-block btn-outline-primary btn-sm" v-bind:class="{ 'disabled': !search.next }" v-on:click="go_next"><i class="fas fa-angle-double-right"></i></button>
+            </div>
+          </div>
+          <table class="table table-condensed">
+            <thead>
+              <tr>
+                <th>Code</th>
+                <th>Nom</th>
+                <th>Ville</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="item in search.results">
+                <th>${item.id}</th>
+                <td>${item.nom} ${item.prenom}</td>
+                <td>${item.ville}</td>
+                <td></td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="row">
+            <div class="col-1">
+              <button class="btn btn-block btn-outline-primary btn-sm" v-bind:class="{ 'disabled': !search.previous }" v-on:click="go_previous"><i class="fas fa-angle-double-left"></i></button>
+            </div>
+            <div class="col-10">
+            </div>
+            <div class="col-1">
+              <button class="btn btn-block btn-outline-primary btn-sm" v-bind:class="{ 'disabled': !search.next }" v-on:click="go_next"><i class="fas fa-angle-double-right"></i></button>
+            </div>
+          </div>
+        </div>
+        <div class="overlay" v-show="loader">
+          <i class="fas fa-2x fa-sync-alt fa-spin"></i>
+        </div>
+      </div>
+    </div>
+    <div class="col-3">
+      <div class="row">
+        <div class="col-12">
+          <div class="card card-outline card-primary" v-if="search">
+            <div class="card-header">
+              <h3 class="card-title">Ajouter un Krabophile</h3>
+              <div class="card-tools">
+                <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="form-group">
+                <label for="nomAddForm">Nom</label>
+                <input id="nomAddForm" class="form-control" type="text" placeholder="Nom" v-model="selected.nom">
+              </div>
+              <div class="form-group">
+                <label for="prenomAddForm">Prenom</label>
+                <input id="prenomAddForm" class="form-control" type="text" placeholder="Nom" v-model="selected.prenom">
+              </div>
+              <div class="form-group">
+                <label for="adresseAddForm">Adresse</label>
+                <input id="adresseAddForm" class="form-control" type="text" placeholder="Nom" v-model="selected.adresse">
+              </div>
+              <div class="form-group">
+                <label for="complementAdresseAddForm">Complément</label>
+                <input id="complementAdresseAddForm" class="form-control" type="text" placeholder="Nom" v-model="selected.adresse_complement">
+              </div>
+              <div class="form-group">
+                <label for="codePostalAddForm">Code postal</label>
+                <input id="codePostalAddForm" class="form-control" type="text" placeholder="Nom" v-model="selected.code_postal">
+              </div>
+              <div class="form-group">
+                <label for="villeAddForm">Ville</label>
+                <input id="villeAddForm" class="form-control" type="text" placeholder="Nom" v-model="selected.ville">
+              </div>
+              <div class="form-group">
+                <div class="custom-control custom-switch">
+                   
+                  <input type="checkbox" class="custom-control-input" id="societaireAddForm" v-model="selected.societaire">
+                  <label class="custom-control-label" for="societaireAddForm">Sociétaire</label> 
+                </div>
+              </div>
+              <div class="form-group">
+                <div class="custom-control custom-switch">
+                   
+                  <input type="checkbox" class="custom-control-input" id="actifAddForm" v-model="selected.actif">
+                  <label class="custom-control-label" for="actifAddForm">Actif</label> 
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-6">
+                  <button class="btn btn-primary btn-block" v-on:click="addUpdate"><i class="fas fa-plus-square"></i></button>
+                </div>
+                <div class="col-6">
+                  <button class="btn btn-danger btn-block" v-on:click="cleanForm"><i class="fas fa-times"></i></button>
+                </div>
+              </div>
+              
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-8">
+      
+      
+    </div>
+    <div class="col-4">
+
+    </div>
+
+  </div>
+</div>
+{% endblock "main_content"%}
+{% block "footer_js" %}
+<script src="{% static 'node_modules/vue/dist/vue.js' %}"></script>
+<script>
+
+
+
+var app = new Vue({
+  el: '#app',
+  delimiters: ['${','}'],
+  data() {
+    return {
+      // loader
+      loader: false,
+      search: {},
+      filter: {
+        nomPrenom: "",
+        ville: "",
+        actif: true,
+      },
+      etiquette_nbre: 0,
+      selected: {
+        id: 0,
+        nom: "",
+        prenom: "",
+        adresse: "",
+        adresse_complement: "",
+        code_postal: "",
+        ville: "",
+        societaire: false,
+        actif: true,
+      },
+      requestOptions: {
+        method: "PATCH",
+        headers: { 
+          "Content-Type": "application/json",
+          "X-CSRFToken": getCookie("csrftoken"),
+          "Accept": "application/json",
+        },
+        body: "",
+        credentials: 'same-origin',
+      },
+    };
+    
+  },
+  computed: {
+    filterArgs () {
+      let args = "";
+      // prends le filtre pour en faire des arguments a l'url
+      if (this.filter.nomPrenom) {
+        args += "nomprenom=" + this.filter.nomPrenom + "&";
+      }
+      if (this.filter.ville) {
+        args += "ville=" + this.filter.ville + "&";
+      }
+      actifArgs = this.filter.actif ? "1" : "0"
+      args += "actif=" + actifArgs + "&";
+      return args;
+      
+    },
+  },
+  methods: {
+    async go_search() {
+      // Charge la saisie de la mise a disposition
+      self = this;
+      self.loader = true;
+      await fetch("/api/krabophile/?" + self.filterArgs).then(function (response) {
+        return response.json();
+      }).then(function (result) {
+        self.search = result;
+      });
+      self.loader = false;
+      
+    },
+    go_next() {
+      self = this;
+      if (self.search.next) {
+        fetch(self.search.next).then(function (response) {
+          return response.json();
+        }).then(function (result) {
+          self.search = result;
+        });
+      }
+    },
+    go_previous() {
+      self = this;
+      if (self.search.previous) {
+        fetch(self.search.previous).then(function (response) {
+          return response.json();
+        }).then(function (result) {
+          self.search = result;
+        });
+      }
+    },
+    async addUpdate() {
+      // Ajoute ou met a jour l'article via l'API
+      self = this;
+      if (self.selected.id == 0) {
+        // Add
+        self.requestOptions.method = "POST";
+        url = "/api/krabophile/";
+      } else {
+        // Update
+        self.requestOptions.method = "PATCH";
+        url = "/api/krabophile/" + self.selected.id + "/";
+      }
+      item = {...self.selected };
+      delete item.id;
+      self.requestOptions.body = JSON.stringify(item);
+      await fetch(url, self.requestOptions).then(function (response) {
+        return response.json();
+      }).then(function (result) {
+        $(document).Toasts('create', {
+          class: 'bg-success', 
+          title: "Ajouté",
+          body: "Enregistrement ajouté",
+        });
+        self.cleanForm();
+        self.go_search();
+      }).catch(function(ex) {
+        $(document).Toasts('create', {
+          class: 'bg-danger', 
+          title: "Erreur d'enregistrement",
+          body: ex,
+        });
+      });
+    },
+    cleanForm() {
+      // Efface le formulaire article
+      self.selected = {
+        id: 0,
+        nom: "",
+        prenom: "",
+        adresse: "",
+        adresse_complement: "",
+        code_postal: "",
+        ville: "",
+        societaire: false,
+        actif: true,
+      };
+    },
+    resetFilter() {
+      this.filter = {
+        nomPrenom: "",
+        ville: "",
+        actif: true,
+      };
+    },
+  },
+  mounted: function () {
+    this.go_search();
+
+  },
+});
+</script>
+
+{% endblock "footer_js"%}

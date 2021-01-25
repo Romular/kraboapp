@@ -1,0 +1,356 @@
+{% extends 'base.html'%}
+{% load static %}
+{% load widget_tweaks %}
+{% block "main_content" %}
+<div id="app">
+  
+  <div class="row">
+    <div class="col-9">
+      <div class="card card-outline card-primary" v-if="search">
+        <div class="card-header">
+          <h3 class="card-title">Recherche</h3>
+          <div class="card-tools">
+            <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-3">
+              <div class="form-group">
+                <label for="codeFilter">Code</label>
+                <input id="codeFilter" class="form-control" type="text" placeholder="" v-model="filter.code" v-on:keyup.enter="go_search">
+              </div>
+            </div>
+            <div class="col-3">
+              <div class="form-group">
+                <label for="libelleFilter">Libelle</label>
+                <input id="libelleFilter" class="form-control" type="text" placeholder="" v-model="filter.libelle" v-on:keyup.enter="go_search">
+              </div>
+            </div>
+            <div class="col-3">
+              <div class="form-group">
+                <label for="familleArticleAddForm">Famille</label>
+                <select class="custom-select" id="familleArticleAddForm" v-model="filter.famille" v-on:keyup.enter="go_search">
+                  <option value="">Toutes</option>
+                  <template v-for="famille_article in famille_article_list">
+                    <option v-bind:value="famille_article.id">${famille_article.libelle}</option>
+                  </template>
+                </select>
+              </div>
+            </div>
+            <div class="col-3">
+              <label for="btnFilter">Go !</label>
+              <div class="row">
+                <div class="col-6">
+                  <button id="btnFilter" class="btn btn-primary btn-block" v-on:click="go_search"><i class="fas fa-filter"></i></button>
+                </div>
+                <div class="col-6">
+                  <button id="btnFilter" class="btn btn-danger btn-block" v-on:click="resetFilter"><i class="fas fa-times"></i></button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+      </div>
+<div class="card card-outline card-primary" v-if="search">
+        <div class="card-header">
+          <h3 class="card-title">Liste des articles</h3>
+          <div class="card-tools">
+            <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-1">
+              <button class="btn btn-block btn-outline-primary btn-sm" v-bind:class="{ 'disabled': !search.previous }" v-on:click="go_previous"><i class="fas fa-angle-double-left"></i></button>
+            </div>
+            <div class="col-10">
+            </div>
+            <div class="col-1">
+              <button class="btn btn-block btn-outline-primary btn-sm" v-bind:class="{ 'disabled': !search.next }" v-on:click="go_next"><i class="fas fa-angle-double-right"></i></button>
+            </div>
+          </div>
+          <table class="table table-condensed">
+            <thead>
+              <tr>
+                <th>Code</th>
+                <th>Libellé</th>
+                <th>Famille</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="article in search.results">
+                <th>${article.etiquette}</th>
+                <td>${article.libelle}</td>
+                <td>${libelleFamille(article.famille)}</td>
+                <td></td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="row">
+            <div class="col-1">
+              <button class="btn btn-block btn-outline-primary btn-sm" v-bind:class="{ 'disabled': !search.previous }" v-on:click="go_previous"><i class="fas fa-angle-double-left"></i></button>
+            </div>
+            <div class="col-10">
+            </div>
+            <div class="col-1">
+              <button class="btn btn-block btn-outline-primary btn-sm" v-bind:class="{ 'disabled': !search.next }" v-on:click="go_next"><i class="fas fa-angle-double-right"></i></button>
+            </div>
+          </div>
+        </div>
+        <div class="overlay" v-show="loader">
+          <i class="fas fa-2x fa-sync-alt fa-spin"></i>
+        </div>
+      </div>
+    </div>
+    <div class="col-3">
+      <div class="row">
+        <div class="col-12">
+          <div class="card card-outline card-primary" v-if="search">
+            <div class="card-header">
+              <h3 class="card-title">Imprimer des étiquettes</h3>
+              <div class="card-tools">
+                <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="row">
+                <div class="col-12">
+                  <label for="nbreEtiquetteForm">Combien d'étiquettes imprimer ?</label>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-9">
+                  <input class="form-control" type="number" v-model="etiquette_nbre">
+                </div>
+                <div class="col-3">
+                  <a id="nbreEtiquetteForm" v-bind:href="'/loca/etiquette/pdf/' + etiquette_nbre + '/'" class="btn btn-default btn-block" target="_blank"><i class="fas fa-print"></i></a>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="card card-outline card-primary" v-if="search">
+            <div class="card-header">
+              <h3 class="card-title">Ajout d'article</h3>
+              <div class="card-tools">
+                <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="form-group">
+                <label for="libelleArticleAddForm">Libellé</label>
+                <input id="libelleArticleAddForm" class="form-control" type="text" placeholder="Désignation de l'article" v-model="selected_article.libelle">
+              </div>
+              <div class="form-group">
+                <label for="familleArticleAddForm">Famille</label>
+                <select class="custom-select" id="familleArticleAddForm" v-model="selected_article.famille">
+                  <template v-for="famille_article in famille_article_list">
+                    <option v-bind:value="famille_article.id">${famille_article.libelle}</option>
+                  </template>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="etiquetteArticleAddForm">Etiquette</label>
+                <input id="etiquetteArticleAddForm" class="form-control" type="text" placeholder="Code étiquette" v-model="selected_article.etiquette">
+              </div>
+              <div class="form-group">
+                <label for="prixSiNonRenduArticleAddForm">Prix si non rendu à temps</label>
+                <input id="prixSiNonRenduArticleAddForm" class="form-control" type="number" v-model="selected_article.prix_facture_si_non_rendu">
+              </div>
+              <div class="row">
+                <div class="col-6">
+                  <button class="btn btn-primary btn-block" v-on:click="addUpdateArticle"><i class="fas fa-plus-square"></i></button>
+                </div>
+                <div class="col-6">
+                  <button class="btn btn-danger btn-block" v-on:click="cleanFormArticle"><i class="fas fa-times"></i></button>
+                </div>
+              </div>
+              
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-8">
+      
+      
+    </div>
+    <div class="col-4">
+
+    </div>
+
+  </div>
+</div>
+{% endblock "main_content"%}
+{% block "footer_js" %}
+<script src="{% static 'node_modules/vue/dist/vue.js' %}"></script>
+<script>
+
+
+
+var app = new Vue({
+  el: '#app',
+  delimiters: ['${','}'],
+  data() {
+    return {
+      // loader
+      loader: false,
+      search: {},
+      filter: {
+        code: "",
+        libelle: "",
+        famille: "",
+      },
+      etiquette_nbre: 0,
+      selected_article: {
+        id: 0,
+        etiquette: 0,
+        libelle: "",
+        famille: "",
+        prix_facture_si_non_rendu: 0,
+      },
+      famille_article_list: [],
+      requestOptions: {
+        method: "PATCH",
+        headers: { 
+          "Content-Type": "application/json",
+          "X-CSRFToken": getCookie("csrftoken"),
+          "Accept": "application/json",
+        },
+        body: "",
+        credentials: 'same-origin',
+      },
+    };
+    
+  },
+  computed: {
+    filterArgs () {
+      let args = "";
+      // prends le filtre pour en faire des arguments a l'url
+      if (this.filter.code) {
+        args += "etiquette=" + this.filter.code + "&";
+      }
+      if (this.filter.libelle) {
+        args += "libelle=" + this.filter.libelle + "&";
+      }
+      if (this.filter.famille) {
+        args += "famille=" + this.filter.famille + "&";
+      }
+      return args;
+      
+    },
+  },
+  methods: {
+    async go_search() {
+      // Charge la saisie de la mise a disposition
+      self = this;
+      self.loader = true;
+      await fetch("/api/article/?" + self.filterArgs).then(function (response) {
+        return response.json();
+      }).then(function (result) {
+        self.search = result;
+      });
+      self.loader = false;
+      
+    },
+    go_next() {
+      self = this;
+      if (self.search.next) {
+        fetch(self.search.next).then(function (response) {
+          return response.json();
+        }).then(function (result) {
+          self.search = result;
+        });
+      }
+    },
+    go_previous() {
+      self = this;
+      if (self.search.previous) {
+        fetch(self.search.previous).then(function (response) {
+          return response.json();
+        }).then(function (result) {
+          self.search = result;
+        });
+      }
+    },
+    async load_famille_article() {
+      self.loader = true;
+      await fetch("/api/famille_article/").then(function (response) {
+        return response.json();
+      }).then(function (result) {
+        self.famille_article_list = result['results'];
+      });
+      self.loader = false;
+    },
+    async addUpdateArticle() {
+      // Ajoute ou met a jour l'article via l'API
+      self = this;
+      if (self.selected_article.id == 0) {
+        // Add
+        self.requestOptions.method = "POST";
+        url = "/api/article/";
+      } else {
+        // Update
+        self.requestOptions.method = "PATCH";
+        url = "/api/article/" + self.selected_article.id + "/";
+      }
+      article = {...self.selected_article };
+      delete article.id;
+      self.requestOptions.body = JSON.stringify(article);
+      await fetch(url, self.requestOptions).then(function (response) {
+        return response.json();
+      }).then(function (result) {
+        $(document).Toasts('create', {
+          class: 'bg-success', 
+          title: "Ajouté",
+          body: "Enregistrement ajouté",
+        });
+        self.cleanFormArticle();
+        self.go_search();
+      }).catch(function(ex) {
+        $(document).Toasts('create', {
+          class: 'bg-danger', 
+          title: "Erreur d'enregistrement",
+          body: ex,
+        });
+      });
+    },
+    cleanFormArticle() {
+      // Efface le formulaire article
+      self.selected_article = {
+        id: 0,
+        etiquette: 0,
+        libelle: "",
+        famille: "",
+        prix_facture_si_non_rendu: 0,
+      };
+    },
+    libelleFamille(id) {
+      for (let famille of this.famille_article_list) {
+        if (famille.id == id) {
+          return famille.libelle;
+        }
+      }
+      return "Non trouvé";
+    },
+    resetFilter() {
+      this.filter = {
+        code: "",
+        libelle: "",
+        famille: "",
+      };
+    },
+  },
+  mounted: function () {
+    this.load_famille_article();
+    this.go_search();
+
+  },
+});
+</script>
+
+{% endblock "footer_js"%}

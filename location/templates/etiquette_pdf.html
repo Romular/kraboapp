@@ -1,0 +1,44 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <style>
+    @import url("https://fonts.googleapis.com/css?family=Libre+Barcode+39+Text");
+    @page {
+      margin: 0;
+    }
+    .barcode {
+      font-size: 25px;
+      font-family: "Libre Barcode 39 Text", cursive;
+      margin: 0px;
+      padding: 0px;
+    }
+    .numero {
+      font-size: 10px;
+      top: -0.5cm;
+      position: relative;
+    }
+    .etiquette {
+      float:left;
+      text-align: center;
+      padding: 0.2cm;
+      border: 1px gray dotted;
+    }
+    </style>
+    <title>Etiquettes articles</title>
+    <meta name="description" content="Board ticket">
+  </head>
+
+  <body>
+    <section>
+
+      {% for etiquette in etiquette_list %}
+        <div class="etiquette">
+          <span class="barcode">*{{etiquette.id}}*</span><br />
+          <!-- <span class="numero">{{etiquette.id}}</span> -->
+        </div>
+      {% endfor %}
+
+    </section>
+  </body>
+</html>
