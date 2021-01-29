@@ -2,7 +2,7 @@ from django.db import models
 from django.utils import timezone
 from krabophile.models import Krabophile
 
-
+from datetime import datetime
 
 class Etiquette(models.Model):
     """
@@ -79,9 +79,19 @@ class Pret(models.Model):
     krabophile = models.ForeignKey(Krabophile, null=False, blank=False, db_index=True, on_delete=models.CASCADE)
     prix_location = models.FloatField("Prix", null=False, blank=True, db_index=True, default=0)
     # Si pas rendu a date_restitution, sera facturé au prix article.prix_facture_si_non_rendu
-    date_restitution = models.DateTimeField("A rendre avant le", db_index=True, null=False)
+    date_restitution = models.DateField("A rendre avant le", db_index=True, null=False)
     
     created = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         ordering = ["created"]
+
+    def __str__(self):
+        return f"{self.article.libelle} - {self.krabophile.prenom} {self.krabophile.nom}"
+
+    @property
+    def en_retard(self):
+        if self.date_restitution < timezone.now().date():
+            return True
+        else:
+            return False

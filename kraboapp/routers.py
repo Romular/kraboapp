@@ -1,11 +1,12 @@
 from rest_framework import routers
-from location.views import ArticleViewSet, FamilleArticleViewSet, EtiquetteViewSet
-from krabophile.views import KrabophileViewSet
+from location import views as locationViews
+from krabophile import views as krabophileView
 
 
 router = routers.DefaultRouter()
 
-router.register(r'article', ArticleViewSet)
-router.register(r'famille_article', FamilleArticleViewSet)
-router.register(r'etiquette', EtiquetteViewSet)
-router.register(r'krabophile', KrabophileViewSet)
+router.register(r'article', locationViews.ArticleViewSet)
+router.register(r'famille_article', locationViews.FamilleArticleViewSet)
+router.register(r'etiquette', locationViews.EtiquetteViewSet)
+router.register(r'pret', locationViews.PretViewSet)
+router.register(r'krabophile', krabophileView.KrabophileViewSet)

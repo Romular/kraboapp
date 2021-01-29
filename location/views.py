@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from location import serializers
-from location.models import Article, Etiquette, FamilleArticle
+from location.models import Article, Etiquette, FamilleArticle, Pret
 from rest_framework import viewsets
 from rest_framework import permissions
 from django.contrib.auth.mixins import PermissionRequiredMixin, LoginRequiredMixin
@@ -54,10 +54,15 @@ class FamilleArticleViewSet(viewsets.ModelViewSet):
     queryset = FamilleArticle.objects.all()
     serializer_class = serializers.FamilleArticleSerializer
 
-class ArticleView(TemplateView, LoginRequiredMixin):
+class PretViewSet(viewsets.ModelViewSet):
+    queryset = Pret.objects.all()
+    serializer_class = serializers.PretSerializer
+
+class ArticleView(LoginRequiredMixin, TemplateView):
     template_name = "article.html"
 
-
+class PretView(LoginRequiredMixin, TemplateView):
+    template_name = "pret.html"
 
 @login_required
 def etiquette_print_pdf(request, count):

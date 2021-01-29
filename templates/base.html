@@ -320,11 +320,15 @@
 <!-- ./wrapper -->
 {% endblock body %}
 <!-- jQuery -->
+<script src="{% static 'node_modules/luxon/build/global/luxon.js' %}"></script>
+
 <script src="{% static 'node_modules/jquery/dist/jquery.min.js' %}"></script>
 <!-- jQuery UI 1.11.4 -->
 <script src="{% static 'node_modules/jquery-ui-dist/jquery-ui.min.js' %}"></script>
 <!-- Resolve conflict in jQuery UI tooltip with Bootstrap tooltip -->
 <script>
+var DateTime = luxon.DateTime;
+
   function getCookie(name) {
     var cookieValue = null;
     if (document.cookie && document.cookie !== '') {

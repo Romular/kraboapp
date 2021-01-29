@@ -14,8 +14,8 @@
       padding: 0px;
     }
     .numero {
-      font-size: 10px;
-      top: -0.5cm;
+      font-size: 6px;
+      top: -2px;
       position: relative;
     }
     .etiquette {
@@ -35,7 +35,15 @@
       {% for etiquette in etiquette_list %}
         <div class="etiquette">
           <span class="barcode">*{{etiquette.id}}*</span><br />
-          <!-- <span class="numero">{{etiquette.id}}</span> -->
+          <span class="numero">Priopriété du [K]Rabo</span>
+        </div>
+        <div class="etiquette">
+          <span class="barcode">*{{etiquette.id}}*</span><br />
+          <span class="numero">Priopriété du [K]Rabo</span>
+        </div>
+        <div class="etiquette">
+          <span class="barcode">*{{etiquette.id}}*</span><br />
+          <span class="numero">Priopriété du [K]Rabo</span>
         </div>
       {% endfor %}
 

@@ -1,0 +1,385 @@
+{% extends 'base.html'%}
+{% load static %}
+{% load widget_tweaks %}
+{% block "main_content" %}
+<div id="app">
+  
+  <div class="row">
+    <div class="col-9">
+      <div class="card card-outline card-primary" v-if="search">
+        <div class="card-header">
+          <h3 class="card-title">Recherche</h3>
+          <div class="card-tools">
+            <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-2">
+              <div class="form-group">
+                <label for="codeFilter">Code article</label>
+                <input id="codeFilter" class="form-control" type="text" placeholder="" v-model="filter.articleCode" v-on:keyup.enter="go_search">
+              </div>
+            </div>
+            <div class="col-3">
+              <div class="form-group">
+                <label for="libelleFilter">libellé article ou Nom / prénom</label>
+                <input id="libelleFilter" class="form-control" type="text" placeholder="" v-model="filter.libelleNomPrenom" v-on:keyup.enter="go_search">
+              </div>
+            </div>
+            <div class="col-3">
+              <div class="form-group">
+                <label for="familleArticleAddForm">Famille</label>
+                <select class="custom-select" id="familleArticleAddForm" v-model="filter.famille" v-on:keyup.enter="go_search">
+                  <option value="">Toutes</option>
+                  <template v-for="famille_article in famille_article_list">
+                    <option v-bind:value="famille_article.id">${famille_article.libelle}</option>
+                  </template>
+                </select>
+              </div>
+            </div>
+            <div class="col-2">
+              <div class="form-group">
+                <div class="custom-control custom-switch">
+                   
+                  <input type="checkbox" class="custom-control-input" id="renduFilter" v-model="filter.rendu"  v-on:change="go_search">
+                  <label class="custom-control-label" for="renduFilter">Rendu ?</label> 
+                </div>
+              </div>
+            </div>
+            <div class="col-2">
+              <label for="btnFilter">Go !</label>
+              <div class="row">
+                <div class="col-6">
+                  <button id="btnFilter" class="btn btn-primary btn-block" v-on:click="go_search"><i class="fas fa-filter"></i></button>
+                </div>
+                <div class="col-6">
+                  <button id="btnFilter" class="btn btn-danger btn-block" v-on:click="resetFilter"><i class="fas fa-times"></i></button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+      </div>
+<div class="card card-outline card-primary" v-if="search">
+        <div class="card-header">
+          <h3 class="card-title">Liste des articles</h3>
+          <div class="card-tools">
+            <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-1">
+              <button class="btn btn-block btn-outline-primary btn-sm" v-bind:class="{ 'disabled': !search.previous }" v-on:click="go_previous"><i class="fas fa-angle-double-left"></i></button>
+            </div>
+            <div class="col-10">
+            </div>
+            <div class="col-1">
+              <button class="btn btn-block btn-outline-primary btn-sm" v-bind:class="{ 'disabled': !search.next }" v-on:click="go_next"><i class="fas fa-angle-double-right"></i></button>
+            </div>
+          </div>
+          <table class="table table-condensed">
+            <thead>
+              <tr>
+                <th>Code barre</th>
+                <th>Libellé</th>
+                <th>Famille</th>
+                <th>Krabophile</th>
+                <th>Date emprunt</th>
+                <th>Date restitution</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="pret in search.results">
+                <th>${pret.article.etiquette}</th>
+                <td>${pret.article.libelle}</td>
+                <td>${libelleFamille(pret.article.famille)}</td>
+                <td>${pret.krabophile.prenom} ${pret.krabophile.nom}</td>
+                <td>${formatDate(pret.created)}</td>
+                <td><span class="badge" v-bind:class="[ pret.en_retard ? 'badge-danger' : 'badge-success' ]">${formatDate(pret.date_restitution)}</span></td>
+                <td></td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="row">
+            <div class="col-1">
+              <button class="btn btn-block btn-outline-primary btn-sm" v-bind:class="{ 'disabled': !search.previous }" v-on:click="go_previous"><i class="fas fa-angle-double-left"></i></button>
+            </div>
+            <div class="col-10">
+            </div>
+            <div class="col-1">
+              <button class="btn btn-block btn-outline-primary btn-sm" v-bind:class="{ 'disabled': !search.next }" v-on:click="go_next"><i class="fas fa-angle-double-right"></i></button>
+            </div>
+          </div>
+        </div>
+        <div class="overlay" v-show="loader">
+          <i class="fas fa-2x fa-sync-alt fa-spin"></i>
+        </div>
+      </div>
+    </div>
+    <div class="col-3">
+      <div class="row">
+        <div class="col-12">
+          <div class="card card-outline card-primary" v-if="search">
+            <div class="card-header">
+              <h3 class="card-title">Nouveau prêt</h3>
+              <div class="card-tools">
+                <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="form-group">
+                <label for="krabophilePretAddForm">Krabophile</label>
+                <select class="form-control select2" style="width: 100%" id="krabophilePretAddForm" v-model="selected.krabophile">
+                  <option v-for="krabophile in krabophile_list" v-bind:value="krabophile.id">${krabophile.prenom} ${krabophile.nom}</option>
+
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="codeBarrePretAddForm">Code barre</label>
+                <input id="codeBarrePretAddForm" class="form-control" type="text" placeholder="Code article" v-model="selected.articleCodeBarre" v-on:keyup.enter="selectedArticleDesignation">
+              </div>
+              <div class="form-group">
+                <label for="roArticleSelected">Article</label>
+                <input id="roArticleSelected" class="form-control " v-bind:value="selected.designationArticle" type="text" disabled="">
+              </div>
+              <div class="row">
+                <div class="col-6">
+                  <button class="btn btn-primary btn-block" v-on:click="addUpdateArticle"><i class="fas fa-plus-square"></i></button>
+                </div>
+                <div class="col-6">
+                  <button class="btn btn-danger btn-block" v-on:click="cleanFormArticle"><i class="fas fa-times"></i></button>
+                </div>
+              </div>
+              
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-8">
+      
+      
+    </div>
+    <div class="col-4">
+
+    </div>
+
+  </div>
+</div>
+{% endblock "main_content"%}
+{% block "footer_js" %}
+<script src="{% static 'node_modules/vue/dist/vue.js' %}"></script>
+<script>
+
+
+
+var app = new Vue({
+  el: '#app',
+  delimiters: ['${','}'],
+  data() {
+    return {
+      // loader
+      loader: false,
+      search: {},
+      filter: {
+        articleCode: "",
+        libelleNomPrenom: "",
+        famille: "",
+        rendu: false,
+      },
+      selected: {
+        id: 0,
+        krabophile: 0,
+        articleCodeBarre: "",
+        designationArticle: "",
+      },
+      famille_article_list: [],
+      krabophile_list: [],
+      requestOptions: {
+        method: "PATCH",
+        headers: { 
+          "Content-Type": "application/json",
+          "X-CSRFToken": getCookie("csrftoken"),
+          "Accept": "application/json",
+        },
+        body: "",
+        credentials: 'same-origin',
+      },
+    };
+    
+  },
+  computed: {
+    filterArgs () {
+      let args = "";
+      // prends le filtre pour en faire des arguments a l'url
+      if (this.filter.code) {
+        args += "etiquette=" + this.filter.code + "&";
+      }
+      if (this.filter.libelle) {
+        args += "libelle=" + this.filter.libelle + "&";
+      }
+      if (this.filter.famille) {
+        args += "famille=" + this.filter.famille + "&";
+      }
+      return args;
+      
+    },
+  },
+  methods: {
+    async go_search() {
+      // Charge la saisie de la mise a disposition
+      self = this;
+      self.loader = true;
+      await fetch("/api/pret/?" + self.filterArgs).then(function (response) {
+        return response.json();
+      }).then(function (result) {
+        self.search = result;
+      });
+      self.loader = false;
+      
+    },
+    go_next() {
+      self = this;
+      if (self.search.next) {
+        fetch(self.search.next).then(function (response) {
+          return response.json();
+        }).then(function (result) {
+          self.search = result;
+        });
+      }
+    },
+    go_previous() {
+      self = this;
+      if (self.search.previous) {
+        fetch(self.search.previous).then(function (response) {
+          return response.json();
+        }).then(function (result) {
+          self.search = result;
+        });
+      }
+    },
+    selectedArticleDesignation() {
+      //Retourne l'objet article en fonction de son code à barre
+      self = this;
+      if (self.selected.articleCodeBarre != "") {
+        fetch("/api/article/?etiquette=" + self.selected.articleCodeBarre).then(function (response) {
+          return response.json();
+        }).then(function (result) {
+          try {
+            self.selected.designationArticle = result['results'][0]['libelle'];
+          } catch {
+            self.selected.designationArticle = "Article non trouvé";
+          }
+        });
+      } else {
+        self.selected.designationArticle = "";
+      }
+    },
+    async load_famille_article() {
+      self.loader = true;
+      await fetch("/api/famille_article/").then(function (response) {
+        return response.json();
+      }).then(function (result) {
+        self.famille_article_list = result['results'];
+      });
+      self.loader = false;
+    },
+    async load_krabophiles() {
+      self.loader = true;
+      await fetch("/api/krabophile/").then(function (response) {
+        return response.json();
+      }).then(function (result) {
+        self.krabophile_list = result['results'];
+      });
+      self.loader = false;
+    },
+
+    async addUpdateArticle() {
+      // Ajoute ou met a jour l'article via l'API
+      self = this;
+      if (self.selected_article.id == 0) {
+        // Add
+        self.requestOptions.method = "POST";
+        url = "/api/article/";
+      } else {
+        // Update
+        self.requestOptions.method = "PATCH";
+        url = "/api/article/" + self.selected_article.id + "/";
+      }
+      article = {...self.selected_article };
+      delete article.id;
+      self.requestOptions.body = JSON.stringify(article);
+      await fetch(url, self.requestOptions).then(function (response) {
+        return response.json();
+      }).then(function (result) {
+        $(document).Toasts('create', {
+          class: 'bg-success', 
+          title: "Ajouté",
+          body: "Enregistrement ajouté",
+        });
+        self.cleanFormArticle();
+        self.go_search();
+      }).catch(function(ex) {
+        $(document).Toasts('create', {
+          class: 'bg-danger', 
+          title: "Erreur d'enregistrement",
+          body: ex,
+        });
+      });
+    },
+    cleanFormArticle() {
+      // Efface le formulaire article
+      self.selected_article = {
+        id: 0,
+        etiquette: 0,
+        libelle: "",
+        famille: "",
+        prix_facture_si_non_rendu: 0,
+      };
+    },
+    libelleFamille(id) {
+      for (let famille of this.famille_article_list) {
+        if (famille.id == id) {
+          return famille.libelle;
+        }
+      }
+      return "Non trouvé";
+    },
+    resetFilter() {
+      this.filter = {
+        articleCode: "",
+        libelleNomPrenom: "",
+        famille: "",
+        rendu: false,
+      };
+    },
+    formatDate(date) {
+      return DateTime.fromISO(date).toLocaleString();
+    },
+    formatDateTime(datetime) {
+      return DateTime.fromISO(datetime).toLocaleString();
+    }
+  },
+  mounted: function () {
+    this.load_famille_article();
+    this.load_krabophiles();
+    this.go_search();
+
+  },
+});
+
+  $(function () {
+    //Initialize Select2 Elements
+    $('.select2').select2({
+      theme: 'bootstrap4',
+    })
+  });
+</script>
+
+{% endblock "footer_js"%}

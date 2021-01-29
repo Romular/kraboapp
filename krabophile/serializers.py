@@ -1,7 +1,9 @@
 from rest_framework import serializers
 from krabophile import models
+from django_restql.mixins import DynamicFieldsMixin
 
-class KrabophileSerializer(serializers.ModelSerializer):
+
+class KrabophileSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
 
     class Meta:
         model = models.Krabophile

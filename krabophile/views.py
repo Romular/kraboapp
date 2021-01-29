@@ -35,5 +35,5 @@ class KrabophileViewSet(viewsets.ModelViewSet):
         return queryset
 
 
-class KrabophileView(TemplateView, LoginRequiredMixin):
+class KrabophileView(LoginRequiredMixin, TemplateView):
     template_name = "krabophile.html"
